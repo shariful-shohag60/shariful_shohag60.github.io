@@ -1,0 +1,84 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shariful Islam Shohag | Home</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Shariful Islam Shohag</h1>
+    <p>Research Assistant | North South University</p>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="research.html">Research Interests</a></li>
+        <li><a href="publications.html">Publications</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section class="section">
+      <h2>About Me</h2>
+      <p>Hello, I am Shariful Islam Shohag, a recent graduate from North South University (NSU) in Dhaka, Bangladesh, with a BSc in Electrical and Electronics Engineering (EEE), earning Summa Cum Laude honors and a 3.81/4.00 GPA, ranking in the top 5 in class. My academic excellence spans circuit theory, electronics, power systems, signal processing, and electromagnetics.</p>
+      <p>I excel in circuit simulation using tools like LTSpice, Multisim, MATLAB/Simulink, and PSpice, and apply mathematical modeling with linear algebra, differential equations, and optimization to address challenges in signal integrity, control systems, and renewable energy integration. My hands-on projects have optimized electronic circuits for enhanced performance.</p>
+      <p>As a Research Assistant at NSU, I contribute to data analysis, simulation experiments, literature reviews, and writing papers, focusing on technologies for social good, such as efficient energy systems, smart grids, and VLSI circuits. I am eager to explore AI in engineering, renewable energy, and IoT-integrated circuits, showcasing adaptability and a passion for learning.</p>
+      <p>I am actively seeking funded master’s or PhD opportunities in electrical engineering or related fields, aiming to drive impactful research. With a strong academic record and technical expertise, I am poised to become a leader in engineering innovation.</p>
+    </section>
+    <section class="section">
+      <h2>Skills</h2>
+      <ul>
+        <li>MATLAB, C, Python</li>
+        <li>LTSpice, Logisim, Multisim, Cadence</li>
+        <li>OriginLab, Comsol</li>
+        <li>Reopt, HOMER Pro</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    &copy; 2025 Shariful Islam Shohag. Powered by <a href="https://pages.github.com/" target="_blank" style="color:#3182ce;">GitHub Pages</a>.
+  </footer>
+</body>
+</html>
