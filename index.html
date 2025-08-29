@@ -1,58 +1,110 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portfolio of Shariful Islam Shohag, Electrical Engineering graduate and Research Assistant at North South University.">
+  <meta name="keywords" content="Shariful Islam Shohag, Electrical Engineering, Research Assistant, North South University, MATLAB, Python, Renewable Energy">
   <title>Shariful Islam Shohag | Home</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    header p {
+      margin: 0.5rem 0;
+      color: #555;
+    }
+    nav {
+      margin-top: 1rem;
+    }
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    .nav-links li {
+      display: inline;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #3182ce;
+      font-weight: 500;
+    }
+    .nav-links a.active, .nav-links a:hover {
+      color: #1a5276;
+      font-weight: 700;
+    }
+    .section {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .section h2 {
+      color: #1a5276;
+      border-bottom: 2px solid #3182ce;
+      padding-bottom: 0.5rem;
+    }
+    .section ul {
+      list-style: disc;
+      margin-left: 1.5rem;
+    }
+    .profile-img {
+      max-width: 200px;
+      border-radius: 50%;
+      margin: 1rem 0;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+      .nav-links {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .section {
+        margin: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>Shariful Islam Shohag</h1>
     <p>Research Assistant | North South University</p>
-    <nav>
+    <nav role="navigation" aria-label="Main navigation">
       <ul class="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="index.html" class="active" aria-current="page">Home</a></li>
         <li><a href="research.html">Research Interests</a></li>
         <li><a href="publications.html">Publications</a></li>
         <li><a href="contact.html">Contact</a></li>
@@ -60,15 +112,16 @@
     </nav>
   </header>
   <main>
-    <section class="section">
-      <h2>About Me</h2>
+    <section class="section" aria-labelledby="about-me">
+      <h2 id="about-me">About Me</h2>
+      <img src="shohag.jpg" alt="Portrait of Shariful Islam Shohag" class="profile-img">
       <p>Hello, I am Shariful Islam Shohag, a recent graduate from North South University (NSU) in Dhaka, Bangladesh, with a BSc in Electrical and Electronics Engineering (EEE), earning Summa Cum Laude honors and a 3.81/4.00 GPA, ranking in the top 5 in class. My academic excellence spans circuit theory, electronics, power systems, signal processing, and electromagnetics.</p>
       <p>I excel in circuit simulation using tools like LTSpice, Multisim, MATLAB/Simulink, and PSpice, and apply mathematical modeling with linear algebra, differential equations, and optimization to address challenges in signal integrity, control systems, and renewable energy integration. My hands-on projects have optimized electronic circuits for enhanced performance.</p>
       <p>As a Research Assistant at NSU, I contribute to data analysis, simulation experiments, literature reviews, and writing papers, focusing on technologies for social good, such as efficient energy systems, smart grids, and VLSI circuits. I am eager to explore AI in engineering, renewable energy, and IoT-integrated circuits, showcasing adaptability and a passion for learning.</p>
       <p>I am actively seeking funded master’s or PhD opportunities in electrical engineering or related fields, aiming to drive impactful research. With a strong academic record and technical expertise, I am poised to become a leader in engineering innovation.</p>
     </section>
-    <section class="section">
-      <h2>Skills</h2>
+    <section class="section" aria-labelledby="skills">
+      <h2 id="skills">Skills</h2>
       <ul>
         <li>MATLAB, C, Python</li>
         <li>LTSpice, Logisim, Multisim, Cadence</li>
@@ -76,9 +129,13 @@
         <li>Reopt, HOMER Pro</li>
       </ul>
     </section>
+    <section class="section" aria-labelledby="projects">
+      <h2 id="projects">Projects</h2>
+      <p>Explore my work in circuit simulation, renewable energy systems, and data analysis. Notable projects include optimizing electronic circuits for performance and designing simulations for smart grid integration. <a href="projects.html">View All Projects</a></p>
+    </section>
   </main>
   <footer>
-    &copy; 2025 Shariful Islam Shohag. Powered by <a href="https://pages.github.com/" target="_blank" style="color:#3182ce;">GitHub Pages</a>.
+    &copy; 2025 Shariful Islam Shohag. Powered by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
   </footer>
 </body>
 </html>
