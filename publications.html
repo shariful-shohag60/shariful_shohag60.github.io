@@ -1,50 +1,176 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shariful Islam Shohag | Publications</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      color: #333;
+    }
+    header {
+      background-color: #e0f7fa; /* Light blue */
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #00796b;
+    }
+    header p {
+      margin: 0.5rem 0;
+      font-size: 1.2rem;
+      color: #004d40;
+    }
+    nav {
+      margin-top: 1rem;
+    }
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    .nav-links li a {
+      text-decoration: none;
+      color: #00796b;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .nav-links li a:hover, .nav-links li a.active {
+      background-color: #b2dfdb; /* Light green */
+      color: #004d40;
+    }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .section {
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .section h2 {
+      color: #00796b;
+      border-bottom: 2px solid #b2dfdb; /* Light green */
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .publication-list {
+      list-style: none;
+      padding: 0;
+    }
+    .publication-list li {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: #e0f7fa; /* Light blue */
+      border-radius: 5px;
+    }
+    .publication-list li strong {
+      color: #004d40;
+    }
+    .publication-list li .status {
+      font-style: italic;
+      color: #00796b;
+    }
+    .publication-list li .abstract {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .publication-list li a {
+      color: #00796b;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .publication-list li a:hover {
+      text-decoration: underline;
+    }
+    .contact-cta {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .contact-cta a {
+      background-color: #b2dfdb; /* Light green */
+      color: #004d40;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: background-color 0.3s;
+    }
+    .contact-cta a:hover {
+      background-color: #80cbc4;
+    }
+    footer {
+      background-color: #e0f7fa; /* Light blue */
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      color: #004d40;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      .nav-links {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="text/javascript">
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function filledCell(cell) {
+      return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+        try {
+          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+          var firstSheetName = workbook.SheetNames[0];
+          var worksheet = workbook.Sheets[firstSheetName];
+          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+          var filteredData = jsonData.filter(row => row.some(filledCell));
+          var headerRowIndex = filteredData.findIndex((row, index) =>
+            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+          );
+          if (headerRowIndex === -1 || headerRowIndex > 25) {
+            headerRowIndex = 0;
+          }
+          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+          return csv;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      }
+      return gk_fileData[filename] || "";
+    }
+    // Example function to load publication data (placeholder for future implementation)
+    function loadPublications() {
+      // This could be extended to read from an XLSX file using loadFileData
+      console.log("Loading publications...");
+    }
+    document.addEventListener('DOMContentLoaded', loadPublications);
+  </script>
 </head>
 <body>
   <header>
@@ -62,11 +188,17 @@
   <main>
     <section class="section">
       <h2>Publications</h2>
-      <ul>
-        <li><strong>Shariful Islam, et al.</strong> Advanced Model Order Reduction for High-Dimensional Aerospace Control Systems. (under review)</li>
-        <li><strong>Shariful Islam, et al.</strong> Optimal model order reduction technique for the dynamic motor vehicle suspension system.  (under review) </li>
+      <ul class="publication-list">
+        <li>
+          <strong>Shariful Islam, et al.</strong> Advanced Model Order Reduction for High-Dimensional Aerospace Control Systems.
+          <span class="status">(under review)</span>
+        </li>
+        <li>
+          <strong>Shariful Islam, et al.</strong> Optimal Model Order Reduction Technique for the Dynamic Motor Vehicle Suspension System.
+          <span class="status">(under review)</span>
+        </li>
       </ul>
-      <p>For the full list of publications or to request a copy, please contact me via the <a href="contact.html">Contact</a> page.</p>
+      <p class="contact-cta">For the full list of publications or to request a copy, please contact me via the <a href="contact.html">Contact</a> page.</p>
     </section>
   </main>
 </body>
